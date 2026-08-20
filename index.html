@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz géographie française</title>
+  <style>
+    :root { color-scheme: light; --blue:#2563eb; --green:#16a34a; --red:#dc2626; --ink:#1f2937; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, sans-serif; color:var(--ink); background:linear-gradient(135deg,#e0f2fe,#fef3c7); min-height:100vh; }
+    header { text-align:center; padding:1.5rem 1rem .5rem; }
+    h1 { margin:.2rem 0; font-size:clamp(1.7rem,4vw,3rem); }
+    main { width:min(1180px,96vw); margin:auto; display:grid; grid-template-columns: minmax(320px, 1fr) 360px; gap:1rem; padding:1rem; }
+    .card { background:rgba(255,255,255,.88); border:1px solid rgba(15,23,42,.1); border-radius:24px; box-shadow:0 20px 45px rgba(15,23,42,.14); }
+    .map-card { padding:1rem; }
+    .panel { padding:1.2rem; align-self:start; position:sticky; top:1rem; }
+    .map-wrap { position:relative; aspect-ratio: 1/1.05; max-height:78vh; }
+    svg { width:100%; height:100%; display:block; }
+    .france { fill:#f8fafc; stroke:#334155; stroke-width:3; }
+    .sea-label { fill:#0284c7; font-weight:800; font-size:15px; opacity:.75; }
+    .neighbor { fill:#64748b; font-weight:800; font-size:13px; letter-spacing:.4px; }
+    .river { fill:none; stroke:#38bdf8; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; cursor:pointer; filter:drop-shadow(0 1px 0 #0369a1); }
+    .mountain { fill:#a16207; opacity:.75; stroke:#713f12; stroke-width:1.5; cursor:pointer; }
+    .city { fill:#ef4444; stroke:white; stroke-width:3; cursor:pointer; }
+    .hotspot { cursor:pointer; transition:transform .15s ease, opacity .15s ease; transform-box:fill-box; transform-origin:center; }
+    .hotspot:hover, .hotspot:focus { opacity:.78; outline:none; filter:drop-shadow(0 0 8px #f59e0b); }
+    .hotspot.selected .city, .hotspot.selected .mountain, .hotspot.selected .river { filter:drop-shadow(0 0 10px #f59e0b); }
+    text { user-select:none; pointer-events:none; }
+    .legend { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-top:.7rem; font-size:.92rem; }
+    .pill { background:#f1f5f9; border-radius:999px; padding:.35rem .65rem; }
+    .score { display:flex; justify-content:space-between; gap:.5rem; font-weight:800; font-size:1.05rem; margin-bottom:1rem; }
+    #question { font-size:1.2rem; font-weight:800; min-height:3.2rem; }
+    .answers { display:grid; gap:.7rem; margin:1rem 0; }
+    button { border:0; border-radius:14px; padding:.85rem 1rem; font:inherit; font-weight:750; cursor:pointer; background:#dbeafe; color:#1e3a8a; transition:.15s; }
+    button:hover:not(:disabled) { transform:translateY(-1px); background:#bfdbfe; }
+    button:disabled { cursor:not-allowed; opacity:.75; }
+    button.correct { background:#bbf7d0; color:#14532d; }
+    button.wrong { background:#fecaca; color:#7f1d1d; }
+    #feedback { min-height:3rem; font-weight:700; }
+    .hint { font-size:.95rem; color:#475569; line-height:1.45; }
+    @media (max-width:850px) { main { grid-template-columns:1fr; } .panel { position:static; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Carte quiz : géographie française</h1>
+    <p>Clique sur une ville, un fleuve, un massif, une mer ou un pays voisin, puis choisis la bonne réponse.</p>
+  </header>
+  <main>
+    <section class="card map-card" aria-label="Carte interactive de France">
+      <div class="map-wrap">
+        <svg viewBox="0 0 620 650" role="img" aria-labelledby="mapTitle mapDesc">
+          <title id="mapTitle">Carte simplifiée et interactive de la France</title>
+          <desc id="mapDesc">La carte montre des villes, fleuves, massifs montagneux, mers et pays voisins à identifier.</desc>
+          <rect width="620" height="650" fill="#bae6fd" opacity=".45"/>
+          <text class="sea-label hotspot" data-name="Manche" data-kind="mer" x="185" y="45">Manche</text>
+          <text class="sea-label hotspot" data-name="Océan Atlantique" data-kind="mer" x="28" y="350" transform="rotate(-75 28 350)">Océan Atlantique</text>
+          <text class="sea-label hotspot" data-name="Mer Méditerranée" data-kind="mer" x="370" y="608">Mer Méditerranée</text>
+          <text class="neighbor hotspot" data-name="Belgique" data-kind="pays voisin" x="395" y="50">Belgique</text>
+          <text class="neighbor hotspot" data-name="Allemagne" data-kind="pays voisin" x="520" y="190">Allemagne</text>
+          <text class="neighbor hotspot" data-name="Suisse" data-kind="pays voisin" x="500" y="350">Suisse</text>
+          <text class="neighbor hotspot" data-name="Italie" data-kind="pays voisin" x="520" y="505">Italie</text>
+          <text class="neighbor hotspot" data-name="Espagne" data-kind="pays voisin" x="235" y="626">Espagne</text>
+          <path class="france" d="M258 58 L355 70 L448 128 L484 208 L455 290 L493 376 L452 492 L374 571 L272 546 L168 575 L96 505 L83 398 L48 315 L89 225 L64 147 L147 89 Z"/>
+          <path class="river hotspot" data-name="Seine" data-kind="fleuve" d="M255 170 C290 165 310 142 342 118 C368 98 397 104 421 84"/>
+          <path class="river hotspot" data-name="Loire" data-kind="fleuve" d="M390 275 C335 280 305 302 270 314 C222 330 181 330 132 348"/>
+          <path class="river hotspot" data-name="Garonne" data-kind="fleuve" d="M250 440 C215 455 174 472 120 468 C92 466 77 445 70 422"/>
+          <path class="river hotspot" data-name="Rhône" data-kind="fleuve" d="M430 292 C433 335 426 385 438 430 C448 467 435 505 410 550"/>
+          <path class="mountain hotspot" data-name="Massif armoricain" data-kind="massif montagneux" d="M80 210 L155 185 L190 240 L148 295 L75 277 Z"/>
+          <path class="mountain hotspot" data-name="Massif central" data-kind="massif montagneux" d="M275 330 L365 315 L412 390 L380 478 L285 468 L235 398 Z"/>
+          <path class="mountain hotspot" data-name="Vosges" data-kind="massif montagneux" d="M455 170 L493 188 L493 255 L448 253 L433 205 Z"/>
+          <path class="mountain hotspot" data-name="Alpes" data-kind="massif montagneux" d="M450 325 L505 382 L485 505 L423 555 L405 440 Z"/>
+          <path class="mountain hotspot" data-name="Pyrénées" data-kind="massif montagneux" d="M168 555 L360 535 L390 575 L180 595 Z"/>
+          <g class="hotspot" data-name="Paris" data-kind="ville"><circle class="city" cx="302" cy="150" r="9"/><text x="315" y="146">Paris</text></g>
+          <g class="hotspot" data-name="Lille" data-kind="ville"><circle class="city" cx="320" cy="80" r="8"/><text x="333" y="78">Lille</text></g>
+          <g class="hotspot" data-name="Strasbourg" data-kind="ville"><circle class="city" cx="484" cy="220" r="8"/><text x="494" y="216">Strasbourg</text></g>
+          <g class="hotspot" data-name="Lyon" data-kind="ville"><circle class="city" cx="418" cy="362" r="9"/><text x="430" y="359">Lyon</text></g>
+          <g class="hotspot" data-name="Marseille" data-kind="ville"><circle class="city" cx="405" cy="548" r="9"/><text x="418" y="547">Marseille</text></g>
+          <g class="hotspot" data-name="Toulouse" data-kind="ville"><circle class="city" cx="238" cy="482" r="9"/><text x="250" y="480">Toulouse</text></g>
+          <g class="hotspot" data-name="Bordeaux" data-kind="ville"><circle class="city" cx="132" cy="420" r="9"/><text x="145" y="418">Bordeaux</text></g>
+          <g class="hotspot" data-name="Nantes" data-kind="ville"><circle class="city" cx="132" cy="330" r="9"/><text x="145" y="327">Nantes</text></g>
+        </svg>
+      </div>
+      <div class="legend">
+        <span class="pill">🔴 villes</span><span class="pill">💧 fleuves</span><span class="pill">⛰️ massifs</span><span class="pill">🌊 mers</span><span class="pill">🧭 pays voisins</span>
+      </div>
+    </section>
+    <aside class="card panel">
+      <div class="score"><span>Score : <span id="score">0</span></span><span>Questions : <span id="answered">0</span></span></div>
+      <p id="question">Clique sur un élément de la carte pour commencer.</p>
+      <div id="answers" class="answers"></div>
+      <p id="feedback" aria-live="polite"></p>
+      <button id="reset" type="button">Recommencer</button>
+      <p class="hint">Astuce : les noms affichés sur la carte servent de repères visuels, mais le quiz te demande d'associer chaque élément à son bon nom parmi trois choix.</p>
+    </aside>
+  </main>
+  <script>
+    const elements = [...document.querySelectorAll('.hotspot[data-name]')];
+    const scoreEl = document.querySelector('#score');
+    const answeredEl = document.querySelector('#answered');
+    const questionEl = document.querySelector('#question');
+    const answersEl = document.querySelector('#answers');
+    const feedbackEl = document.querySelector('#feedback');
+    let score = 0;
+    let answered = 0;
+    let current = null;
+    const byKind = elements.reduce((acc, el) => {
+      const kind = el.dataset.kind;
+      acc[kind] = acc[kind] || [];
+      acc[kind].push(el.dataset.name);
+      return acc;
+    }, {});
+
+    function shuffle(items) {
+      return [...items].sort(() => Math.random() - 0.5);
+    }
+
+    function optionsFor(item) {
+      const candidates = byKind[item.kind].filter(name => name !== item.name);
+      return shuffle([item.name, ...shuffle(candidates).slice(0, 2)]);
+    }
+
+    function ask(el) {
+      elements.forEach(node => node.classList.remove('selected'));
+      el.classList.add('selected');
+      current = { name: el.dataset.name, kind: el.dataset.kind };
+      questionEl.textContent = `Quel est le nom de cet élément (${current.kind}) ?`;
+      feedbackEl.textContent = '';
+      answersEl.innerHTML = '';
+      optionsFor(current).forEach(option => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = option;
+        button.addEventListener('click', () => answer(button, option));
+        answersEl.append(button);
+      });
+    }
+
+    function answer(button, option) {
+      if (!current) return;
+      answered += 1;
+      const isCorrect = option === current.name;
+      if (isCorrect) score += 1;
+      [...answersEl.children].forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === current.name) btn.classList.add('correct');
+      });
+      if (!isCorrect) button.classList.add('wrong');
+      feedbackEl.textContent = isCorrect ? 'Bravo, +1 point !' : `Raté : la bonne réponse était ${current.name}.`;
+      scoreEl.textContent = score;
+      answeredEl.textContent = answered;
+      current = null;
+    }
+
+    elements.forEach(el => {
+      el.setAttribute('tabindex', '0');
+      el.addEventListener('click', () => ask(el));
+      el.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); ask(el); }
+      });
+    });
+
+    document.querySelector('#reset').addEventListener('click', () => {
+      score = 0; answered = 0; current = null;
+      scoreEl.textContent = '0'; answeredEl.textContent = '0'; answersEl.innerHTML = '';
+      feedbackEl.textContent = ''; questionEl.textContent = 'Clique sur un élément de la carte pour commencer.';
+      elements.forEach(node => node.classList.remove('selected'));
+    });
+  </script>
+</body>
+</html>
